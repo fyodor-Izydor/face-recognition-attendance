@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="stylee.css">
+</head>
+<body>
+    <h2>Frequently Asked Questions</h2>
+
+<div style="visibility: hidden; position: absolute; width: 0px; height: 0px;">
+  <svg xmlns="http://www.w3.org/2000/svg">
+    <symbol viewBox="0 0 24 24" id="expand-more">
+      <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/><path d="M0 0h24v24H0z" fill="none"/>
+    </symbol>
+    <symbol viewBox="0 0 24 24" id="close">
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/><path d="M0 0h24v24H0z" fill="none"/>
+    </symbol>
+  </svg>
+</div>
+
+<details open>
+  <summary>
+    <h4>Essential requirements to run the program?</h4>  
+    <svg class="control-icon control-icon-expand" width="24" height="24" role="presentation"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expand-more" /></svg>
+    <svg class="control-icon control-icon-close" width="24" height="24" role="presentation"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#close" /></svg>
+  </summary>
+  <p>OS Supported: Windows 10/11 </p>
+
+  <p>Installation required:</p>
+  <ul>
+    <li>
+        <a href="https://www.python.org/downloads/">python 3.7 or more</a>
+    </li>
+    <li>
+        <a href="https://pip.pypa.io/en/stable/cli/pip_install/">lastest pip</a>
+    </li>
+  </ul>
+  <p>Install the following lib with pip on cmd (recommended version):</p>
+  <ul>
+    <li>
+        <p>cmake : </p>
+        <p><code style="background-color: black; color: aliceblue; padding: 2px; border-radius: 0.5rem;">pip install cmake==3.22.3</code></p>
+    </li>
+    <li>
+        <p>dlib ver.19.22 (modified, special thanks to jloh02 on github) : </p>
+       <p><code style="background-color: black; color: aliceblue; padding: 2px; border-radius: 0.5rem;">pip install modules/dlib/dlib-19.22.99-cp310-cp310-win_amd64.whl</code></p>
+    </li>
+    <li>
+        <p>TensorFlow : </p>
+       <p><code style="background-color: black; color: aliceblue; padding: 2px; border-radius: 0.5rem;">pip install tensorflow==2.8.0</code></p>
+    </li>
+    <li>
+        <p>OpenCV-Python :</p> 
+       <p><code style="background-color: black; color: aliceblue; padding: 2px; border-radius: 0.5rem;">pip install opencv-python==4.5.5.64</code></p>
+    </li>
+    <li>
+        <p>Face-Recognition : </p>
+       <p><code style="background-color: black; color: aliceblue; padding: 2px; border-radius: 0.5rem;">pip install face-recognition==1.3.0</code></p>
+    </li>
+    <li>
+        <p>MTCNN : </p>
+       <p><code style="background-color: black; color: aliceblue; padding: 2px; border-radius: 0.5rem;">pip install mtcnn==0.1.1</code></p>
+    </li>
+    <li>
+        <p>NumPy version 1.22.0 : </p>
+       <p><code style="background-color: black; color: aliceblue; padding: 2px; border-radius: 0.5rem;">pip install numpy==1.22.0</code></p>
+    </li>
+  </ul>
+  
+
+  <p>You must install all to run this.</p>
+
+</details>
+
+<details>
+
+  <summary>
+    Do's and Don'ts
+    <svg class="control-icon control-icon-expand" width="24" height="24" role="presentation"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expand-more" /></svg>
+    <svg class="control-icon control-icon-close" width="24" height="24" role="presentation"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#close" /></svg>
+  </summary>
+  <p>Do's</p>
+    <ul>
+        <li>One person per run</li>
+        <li>Open 'Attendance.csv' file on Visual Studio Code for real time update</li>
+        <li>For the first usage (new face face), register the face first before running attendance function</li>
+    </ul>
+  <p>Don't</p>
+    <ul>
+        <li>Do not open 'Attendance.csv' and/or 'Attendance.xlsx' file on spreadsheet program while the program is running</li>
+    </ul>
+</details>
+
+<details>
+  <summary>
+    Are there any restrictions?    
+    <svg class="control-icon control-icon-expand" width="24" height="24" role="presentation"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expand-more" /></svg>
+    <svg class="control-icon control-icon-close" width="24" height="24" role="presentation"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#close" /></svg>
+  </summary>
+  <p>Only your imagination my friend. Go forth!</p>
+</details>
+</body>
+</html>

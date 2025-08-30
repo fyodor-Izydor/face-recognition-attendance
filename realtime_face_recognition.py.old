@@ -1,0 +1,215 @@
+//FACE RECOGNITION
+
+import cv2
+import numpy as np
+import face_recognition
+import os
+import tensorflow as tf
+from mtcnn.mtcnn import MTCNN
+from datetime import datetime
+
+tf.compat.v1.disable_eager_execution()
+
+path = 'img\samples'
+images = []
+classNames = []
+myList = os.listdir(path)
+print(myList)
+for cl in myList:
+    curImg = cv2.imread(f'{path}/{cl}')
+    images.append(curImg)
+    classNames.append(os.path.splitext(cl)[0])
+print(classNames)
+
+# Fungsi untuk melakukan encoding
+def findEncodings(images):
+    encodeList = [] # list yang akan berisi semua encoding
+    # convert images to RGB
+    for img in images:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        encoded_face = face_recognition.face_encodings(img)[0]
+        encodeList.append(encoded_face)
+        print(encodeList)
+    return encodeList
+
+encoded_face_train = findEncodings(images)
+
+print('Proses Encoding Selesai')
+
+attendance_added = False
+
+def markAttendance(nama, jenisKelamin, usia):
+    global attendance_added
+    # membuka file Attendance.csv, membaca dan menulis sekaligus
+    if not attendance_added:
+        with open('Attendance.csv', 'r+', encoding='windows-1252') as f:
+            myDataList = f.readlines()
+            nameList = []
+            if nama not in nameList:
+                now = datetime.now()
+                dtString = now.strftime('%m/%d/%Y,%H:%M:%S')
+                f.writelines(f'\n{nama},{dtString},{jenisKelamin},{usia} yrs')
+                for line in myDataList:
+                    entry = line.split(',', 1)
+                    nameList.append(entry[0])
+        attendance_added = True
+
+realtime_cam = cv2.VideoCapture(0) # inisialisasi webcam
+mtcnn_detector = MTCNN()
+all_face_locations = []
+if (realtime_cam.isOpened() == False):
+    print("Error opening video stream or file")
+
+while True:
+    success, img = realtime_cam.read()
+    s_img = cv2.resize(img, (0, 0), None, 0.25, 0.25) # mengurangi ukuran gambar menjadi 0.25 dalam skala x dan y
+    s_img = cv2.cvtColor(s_img, cv2.COLOR_BGR2RGB)
+    all_face_locations = mtcnn_detector.detect_faces(s_img) # mendeteksi semua wajah pada kamera
+    print(all_face_locations)
+    
+    facesCurFrame = face_recognition.face_locations(s_img, model="hog")
+    encodesCurFrame = face_recognition.face_encodings(s_img, facesCurFrame)
+
+    for index, current_face_location in enumerate(all_face_locations):
+        x, y, width, height = current_face_location['box']
+        left_pos = x
+        top_pos = y
+        right_pos = x + width
+        bottom_pos = y + height
+        # mengubah magnitudo posisi agar sesuai dengan ukuran frame video asli
+        top_pos = top_pos * 4
+        right_pos = right_pos * 4
+        bottom_pos = bottom_pos * 4
+        left_pos = left_pos * 4
+        
+        current_face_image = img[top_pos:bottom_pos, left_pos:right_pos]
+        current_face_image = img[top_pos:bottom_pos, left_pos:right_pos]
+       
+        AGE_GENDER_MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
+
+        current_face_image_blob = cv2.dnn.blobFromImage(current_face_image, 1, (227, 227), AGE_GENDER_MODEL_MEAN_VALUES, swapRB=False)
+        
+        # Jenis Kelamin
+        gender_label_list = ['L', 'P']
+        gender_protext = "dataset/gender_deploy.prototxt"
+        gender_caffemodel = "dataset/gender_net.caffemodel"
+        gender_cov_net = cv2.dnn.readNet(gender_caffemodel, gender_protext)
+        gender_cov_net.setInput(current_face_image_blob)
+        gender_predictions = gender_cov_net.forward()
+        jenisKelamin = gender_label_list[gender_predictions[0].argmax()]
+
+        # Usia
+        age_label_list = ['1 - 10', '11 - 20', '21 - 30', '31 - 40', '41 - 50', '51 - 60', '61 - 70', '71 - 80', '81 - 90', '91 - 100']
+        age_protext = "dataset/age_deploy.prototxt"
+        age_caffemodel = "dataset/age_net.caffemodel"
+        age_cov_net = cv2.dnn.readNet(age_caffemodel, age_protext)
+        age_cov_net.setInput(current_face_image_blob)
+        age_predictions = age_cov_net.forward()
+        usia = age_label_list[age_predictions[0].argmax()]
+        font = cv2.FONT_HERSHEY_DUPLEX
+        cv2.putText(img, usia + " " + "yrs", (left_pos, bottom_pos - 10), font, 0.5, (0, 255, 255), 1)
+
+    for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
+        faceDis = face_recognition.face_distance(encoded_face_train, encodeFace)
+        os.system('CLS')
+        matchIndex = np.argmin(faceDis)
+        print('Face Distance antara wajah di kamera dengan wajah yang paling mirip di basis data: ', faceDis[matchIndex])
+
+        if faceDis[matchIndex] < 0.40:
+            recognized = 'img/recognized/'
+            nama = classNames[matchIndex].upper().lower()
+            fileName2 = recognized + nama
+            if os.path.exists(recognized) == False:
+                os.mkdir(recognized)
+            if os.path.exists(fileName2) == False:
+                os.mkdir(fileName2)
+            cv2.imwrite('img/recognized/' + nama + '/' + nama + '.jpg', img)
+            print('Anda diidentifikasi dengan nama: ', nama, ', ', jenisKelamin, ', usia: ', usia, ' tahun. \nData pertama Anda telah disimpan dalam dataframe attendance.csv.')
+            markAttendance(nama, jenisKelamin, usia)
+        else: 
+            nama = 'Unknown'
+            print('Wajah Anda ', nama, ', tidak dikenali.\nData Anda tidak dapat disimpan dalam dataframe attendance.csv.') 
+        y1, x2, y2, x1 = faceLoc
+        y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+        cv2.rectangle(img, (x1, y1), (x2, y2), (128,0,128), 2)
+        cv2.rectangle(img, (x1, y2-35), (x2, y2), (128,0,128), cv2.FILLED)
+        cv2.putText(img, nama, (x1+6, y2-6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
+
+    cv2.imshow("Video Webcam", img)
+    
+    k = cv2.waitKey(1)
+    if k == 27: 
+        break
+
+markAttendance(nama, jenisKelamin, usia)
+realtime_cam.release()
+cv2.destroyAllWindows()
+
+
+
+
+//FACE REGIST
+import cv2
+import os
+import tkinter as tk
+from tkinter import messagebox
+
+
+faceCascade = cv2.CascadeClassifier('models/haarcascade_frontalface_default.xml')
+
+path_gambar = "img"
+sample = "img/samples/"
+
+if not os.path.exists(path_gambar):
+    os.mkdir(path_gambar)
+
+if not os.path.exists(sample):
+    os.mkdir(sample)
+
+def Cari():
+    cam = cv2.VideoCapture(0)
+    while cam.isOpened():
+        _, frame = cam.read()
+        face = faceCascade.detectMultiScale(frame, scaleFactor=1.3, minNeighbors=5)
+        for (x, y, w, h) in face:
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (128, 0, 128), 1)
+            cv2.imwrite(f'img/samples/{nama}.jpg', frame)
+            
+        cv2.imshow("Tekan ENTER saat kotak muncul", frame)
+        
+        k = cv2.waitKey(1)
+        if k == 13:
+            break
+            
+    cam.release()
+    cv2.destroyAllWindows()
+
+def myClick1():
+    global nama
+    nama = str(entry_nama.get())
+    if len(entry_nama.get()) == 0:
+        window.destroy()
+    else:
+        window.withdraw()
+        result = messagebox.askquestion("Konfirmasi", "Apakah Anda yakin ingin membuka kamera?")
+        if result == "yes":
+            Cari()
+        window.deiconify()
+
+window = tk.Tk()
+window.geometry("300x200")
+window.title("Pendataan Wajah")
+window.configure(bg="#ffffff")
+
+window.iconbitmap('assets\img\Gunadarma.ico')
+
+label_nama = tk.Label(window, text="Nama :", bg="#ffffff")
+label_nama.pack(pady=20)
+
+entry_nama = tk.Entry(window, width=20)
+entry_nama.pack()
+
+button = tk.Button(window, text="Konfirmasi", command=myClick1, bg="#6b5b95", fg="#ffffff")
+button.pack(pady=(10, 0))
+
+window.mainloop()
