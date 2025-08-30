@@ -1,0 +1,8 @@
+# Force GitHub Linguist to treat only Python as main
+*.py linguist-detectable=true
+*.css linguist-detectable=false
+*.html linguist-detectable=false
+*.js linguist-detectable=false
+
+# Ignore assets folder from language stats
+assets/* linguist-vendored
